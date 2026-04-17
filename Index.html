@@ -1,68 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Tapeat</title>
+<title>Tapeat Grocery</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {font-family: Arial; margin:0; background:#f5f5f5;}
-header {background:#0aad0a; color:white; padding:15px; text-align:center;}
-.product {background:white; margin:10px; padding:10px; border-radius:10px;}
-button {background:#0aad0a; color:white; border:none; padding:10px; border-radius:5px;}
-#cart {position:fixed; bottom:10px; right:10px; background:black; color:white; padding:10px; border-radius:50px;}
+
+header {
+  background:#0aad0a;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+}
+
+.product {
+  background:white;
+  margin:10px;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+}
+
+.product img {
+  width:100%;
+  height:140px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.qty {
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
+}
+
+button {
+  background:#0aad0a;
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:5px;
+}
+
+#cartBox {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:black;
+  color:white;
+  padding:10px;
+  display:flex;
+  justify-content:space-between;
+}
+
+form {
+  background:white;
+  margin:10px;
+  padding:15px;
+  border-radius:10px;
+}
 </style>
 </head>
 
 <body>
 
-<header>
-<h2>🚚 Tapeat 🛍️</h2>
-</header>
+<header>🚚 Tapeat Grocery 🛍️</header>
 
 <div id="products"></div>
 
-<div id="cart">Cart: <span id="count">0</span></div>
+<!-- Address -->
+<form>
+<h3>Delivery Details</h3>
+<input type="text" id="name" placeholder="Name" required><br><br>
+<input type="text" id="phone" placeholder="Phone" required><br><br>
+<input type="text" id="address" placeholder="Address" required>
+</form>
+
+<div id="cartBox">
+<span id="total">₹0</span>
+<button onclick="orderNow()">Order Now</button>
+</div>
 
 <script>
 let products = [
-{name:"Milk", price:19},
-{name:"Bread", price:9},
-{name:"Eggs 4pcs", price:25},
-{name:"Cold Drink", price:40},
- ];
+{name:"Milk", price:19, img:"https://images.unsplash.com/photo-1582719478250-c89cae4dc85b"},
+{name:"Bread", price:9, img:"https://images.unsplash.com/photo-1608198093002-ad4e005484ec"},
+{name:"Eggs", price:25, img:"https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f"},
+{name:"Cold Drink", price:40, img:"https://images.unsplash.com/photo-1629203851122-3726ecdf080e"}
+];
 
-let cart = [];
+let cart = {};
 
 function loadProducts(){
 let html="";
 products.forEach((p,i)=>{
 html += `
 <div class="product">
+<img src="${p.img}">
 <h3>${p.name}</h3>
 <p>₹${p.price}</p>
-<button onclick="addToCart(${i})">Add</button>
+
+<div class="qty">
+<button onclick="changeQty(${i},-1)">-</button>
+<span id="qty${i}">0</span>
+<button onclick="changeQty(${i},1)">+</button>
+</div>
+
 </div>`;
 });
 document.getElementById("products").innerHTML = html;
 }
 
-function addToCart(i){
-cart.push(products[i]);
-document.getElementById("count").innerText = cart.length;
+function changeQty(i, val){
+if(!cart[i]) cart[i]=0;
+
+cart[i] += val;
+if(cart[i] < 0) cart[i]=0;
+
+document.getElementById("qty"+i).innerText = cart[i];
+updateTotal();
+}
+
+function updateTotal(){
+let total = 0;
+for(let i in cart){
+total += cart[i] * products[i].price;
+}
+document.getElementById("total").innerText = "₹"+total;
 }
 
 function orderNow(){
-let text = "Order:%0A";
-cart.forEach(p=>{
-text += p.name + " - ₹" + p.price + "%0A";
-});
-window.open("https://wa.me/919648605039?text="+text);
+let name = document.getElementById("name").value;
+let phone = document.getElementById("phone").value;
+let address = document.getElementById("address").value;
+
+let text = "🛒 Grocery Order:%0A";
+
+for(let i in cart){
+if(cart[i] > 0){
+text += products[i].name + " x " + cart[i] + "%0A";
+}
 }
 
-document.getElementById("cart").onclick = orderNow;
+text += "%0A💰 Total: " + document.getElementById("total").innerText;
+text += "%0A👤 " + name;
+text += "%0A📞 " + phone;
+text += "%0A📍 " + address;
+
+window.open("https://wa.me/919648605039?text="+text);
+}
 
 loadProducts();
 </script>
 
 </body>
-  </html>
+ </html>
